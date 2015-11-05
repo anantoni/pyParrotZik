@@ -22,18 +22,18 @@ class SysIndicator:
             import appindicator
             self.icon_directory = os.path.sep + 'usr' + os.path.sep+ 'share' + os.path.sep+'icons' + os.path.sep+'zik'+ os.path.sep
             if not os.path.isdir(self.icon_directory):
-							self.icon_directory = os.path.dirname(sys.argv[0]) + os.path.sep + 'share' + os.path.sep+'icons' + os.path.sep+'zik'+ os.path.sep
+                self.icon_directory = os.path.dirname(sys.argv[0]) + os.path.sep + 'share' + os.path.sep+'icons' + os.path.sep+'zik'+ os.path.sep
             self.statusicon = appindicator.Indicator("new-parrotzik-indicator",
                                            "indicator-messages",
                                            appindicator.CATEGORY_APPLICATION_STATUS)
             self.statusicon.set_status(appindicator.STATUS_ACTIVE)
             self.statusicon.set_icon_theme_path(self.icon_directory)
-            self.statusicon.set_menu(self.menu)          
-            
-        elif sys.platform=="win32":  
-            self.menu = menu.gtk_menu          
+            self.statusicon.set_menu(self.menu)
+
+        elif sys.platform=="win32":
+            self.menu = menu.gtk_menu
             self.icon_directory = os.path.dirname(os.path.realpath(sys.argv[0])) + os.path.sep+ 'share' + os.path.sep+'icons' + os.path.sep+'zik'+ os.path.sep
-            self.statusicon = gtk.StatusIcon()            
+            self.statusicon = gtk.StatusIcon()
             self.statusicon.connect("popup-menu", self.gtk_right_click_event)
             self.statusicon.set_tooltip("Parrot Zik")
             self.menu_shown=False
@@ -44,14 +44,14 @@ class SysIndicator:
             self.icon_directory = os.path.dirname(os.path.realpath(sys.argv[0])) + os.path.sep+ 'share' + os.path.sep+'icons' + os.path.sep+'zik'+ os.path.sep
             self.statusicon = StatusApp.sharedApplication()
             self.statusicon.initMenu(menu)
-        
+
         self.setIcon(icon)
 
     def setIcon(self, name):
         if sys.platform=="linux2":
             self.statusicon.set_icon(name)
         elif sys.platform=="win32":
-            self.statusicon.set_from_file(self.icon_directory+name+'.png') 
+            self.statusicon.set_from_file(self.icon_directory+name+'.png')
         elif sys.platform=="darwin":
             self.statusicon.setIcon(name,self.icon_directory)
 
@@ -65,7 +65,7 @@ class SysIndicator:
 
     def main(self):
         if sys.platform=="linux2" or sys.platform=="win32":
-            gtk.main()       
+            gtk.main()
         elif sys.platform=="darwin":
             #self.statusicon.run()
             AppHelper.runEventLoop()
@@ -80,7 +80,6 @@ class SysIndicator:
             about_dialog.run()
             about_dialog.destroy()
 
-    
 class UniversalMenu:
     def __init__(self):
         if sys.platform=="linux2" or sys.platform=="win32":
@@ -89,7 +88,6 @@ class UniversalMenu:
             self.actions = {}
             self.menubarMenu = NSMenu.alloc().init()
             self.menubarMenu.setAutoenablesItems_(False)
-            
 
     def append(self,MenuItem):
         if sys.platform=="linux2" or sys.platform=="win32":
@@ -146,7 +144,7 @@ class MenuItem:
 
 if __name__ == "__main__":
 
-    quit_item = MenuItem("Quit",sys.exit,True)     
+    quit_item = MenuItem("Quit",sys.exit,True)
 
     menu = UniversalMenu()
     menu.append(quit_item)
