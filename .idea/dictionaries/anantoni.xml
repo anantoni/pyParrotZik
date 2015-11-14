@@ -2,7 +2,11 @@
   <dictionary name="anantoni">
     <words>
       <w>bluetooth</w>
+      <w>bluez</w>
+      <w>dbus</w>
+      <w>freedesktop</w>
       <w>friendlyname</w>
+      <w>iface</w>
       <w>menubar</w>
       <w>mymenu</w>
       <w>parrotzik</w>

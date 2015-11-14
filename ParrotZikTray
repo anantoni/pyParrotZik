@@ -4,16 +4,22 @@ import sys
 import gtk
 import re
 import os
+import dbus
 import ParrotZik
 import BluetoothPairedDevices
 from SysIndicator import *
+from dbus.mainloop.glib import DBusGMainLoop
+import gobject
 
 UPDATE_FREQUENCY = 30  # seconds
+BLUEZ_VERSION = 5
 
 
 class ParrotZikIndicator(SysIndicator):
     def __init__(self):
 
+        self.batteryState = "In Use"
+        self.batteryLevel = "Unknown"
         self.menu = UniversalMenu()
 
         self.info_item = MenuItem("Parrot Zik Not connected..", None, sensitive=False)
@@ -133,7 +139,6 @@ class ParrotZikIndicator(SysIndicator):
             if self.parrot.BatteryCharging:
                 self.batteryLevel = "Charging"
                 self.set_icon("zik-battery-charging")
-                self.batteryLevel = "Unknown"
                 self.batteryState = "Charging"
             elif self.batteryLevel > 80:
                 self.set_icon("zik-battery-100")
@@ -149,7 +154,6 @@ class ParrotZikIndicator(SysIndicator):
                 self.batteryState = "In Use"
             else:
                 self.set_icon("zik-battery-low")
-                self.batteryState = "In Use"
 
             self.info_item.set_label("Connected to: " + self.name)
             self.firmware_version.set_label("Firmware version: " + self.version)
@@ -165,12 +169,53 @@ class ParrotZikIndicator(SysIndicator):
         return True
 
     def main(self):
-        self.EstablishConnection()
-        gtk.timeout_add(UPDATE_FREQUENCY * 1000, self.EstablishConnection)
-        gtk.timeout_add(UPDATE_FREQUENCY * 1000, self.CheckBattery)
         SysIndicator.main(self)
 
 
 if __name__ == "__main__":
+
     indicator = ParrotZikIndicator()
+    parrot_zik_id = '90:03:B7:5F:5F:82'
+    dbus_loop = DBusGMainLoop()
+    bus = dbus.SystemBus(mainloop=dbus_loop)
+
+    if BLUEZ_VERSION >= 5:
+
+        manager = dbus.Interface(bus.get_object("org.bluez", "/"), "org.freedesktop.DBus.ObjectManager")
+        objects = manager.GetManagedObjects()
+
+        for path, obj in objects.items():
+            if "org.bluez.Device1" in obj:
+                device = obj["org.bluez.Device1"]
+                if device["Name"] and device["Address"] == parrot_zik_id:
+                    print device
+                    if device["Connected"]:
+                        indicator.EstablishConnection()
+                    print "Headset path: " + path
+                    headset = bus.get_object('org.bluez', path)
+                    #headset_interface = dbus.Interface(bus.get_object("org.bluez", path), "org.bluez.Adapter")
+
+    else:
+
+        manager = dbus.Interface(bus.get_object("org.bluez", "/"), "org.bluez.Manager")
+        headset_path = manager.DefaultAdapter() + '/dev_' + parrot_zik_id.replace(":", "_")
+        headset = dbus.Interface(bus.get_object("org.bluez", headset_path), "org.bluez.Adapter")
+
+
+    def handler():
+        print "Handler called"
+        indicator.EstablishConnection()
+    headset.
+    print headset.bus_name
+    print headset.proxy_object
+    headset.connect_to_signal("Connected", handler)
+    headset.connect_to_signal("Disconnected", handler)
+
+    mainloop = gobject.MainLoop()
+
+    try:
+        mainloop.run()
+    except KeyboardInterrupt:
+        mainloop.quit()
+        exit()
     indicator.main()
